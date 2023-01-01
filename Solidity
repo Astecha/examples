@@ -1,0 +1,56 @@
+pragma solidity ^0.7.0;
+
+import "https://github.com/oraclize/ethereum-api/oraclizeAPI.sol";
+
+contract WalletIntermediary is usingOraclize {
+    // The address of the first wallet
+    address payable wallet1;
+    // The address of the second wallet
+    address payable wallet2;
+
+    // The constructor function is called when the contract is deployed
+    // It sets the initial values for the wallet addresses
+    constructor(address payable _wallet1, address payable _wallet2) public {
+        wallet1 = _wallet1;
+        wallet2 = _wallet2;
+    }
+
+    // This function allows wallet1 to send Ether to wallet2
+    function sendEther(uint256 value) public {
+        require(msg.sender == wallet1, "Only wallet1 can send Ether");
+        require(wallet1.balance >= value, "Insufficient balance in wallet1");
+        wallet2.transfer(value);
+        emit TransferMade(wallet1, wallet2, value);
+    }
+
+    // This function allows wallet2 to send Ether to wallet1
+    function receiveEther(uint256 value) public {
+        require(msg.sender == wallet2, "Only wallet2 can send Ether");
+        require(wallet2.balance >= value, "Insufficient balance in wallet2");
+        wallet1.transfer(value);
+        emit TransferMade(wallet2, wallet1, value);
+    }
+
+    // The TransferMade event is emitted whenever a transfer is made
+    event TransferMade(address from, address to, uint256 value);
+
+    // This function is called by Oraclize when the TransferMade event is emitted
+    function __callback(bytes32 _queryId, string _result, bytes _proof) public {
+        // Parse the result string to extract the email addresses and amount transferred
+        // (Assumes the result string is in the format "email1,email2,amount")
+        string memory emails = strSplit(_result, ",")[0];
+        string memory emails2 = strSplit(_result, ",")[1];
+        uint256 value = parseInt(strSplit(_result, ",")[2]);
+        // Send the email using the transactional email service
+        sendEmail(emails, "Transfer notification", "A transfer of " + value + " ETH has been made from " + from + " to " + to);
+        sendEmail(emails2, "Transfer notification", "A transfer of " + value + " ETH has been made from " + from + " to " + to);
+    }
+
+    // Helper function to split a string on a delimiter
+    function strSplit(string _string, string _delimiter) internal pure returns (string memory) {
+        bytes memory b_string = bytes(_string);
+        bytes memory b_delimiter = bytes(_delimiter);
+        uint256 pos = b
+        
+        
+        
